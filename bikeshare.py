@@ -12,7 +12,7 @@ DAYS = ['all', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday
 
 def get_filters():
     """Asks user to specify a city, month, and day to analyze."""
-    print('Hello! Let\'s explore some US bikeshare data!')
+    print("Hello! Let's explore some US bikeshare data!")
 
     city = get_input('Which city would you like to analyze? Chicago, New York City, or Washington: ', CITY_DATA.keys())
     month = get_input('Which month? (all, january, february, ... , june): ', MONTHS)
@@ -31,14 +31,20 @@ def get_input(prompt, valid_options):
 
 def load_data(city, month, day):
     """Loads and filters the city data by month and day."""
-    df = pd.read_csv(CITY_DATA[city])
+    try:
+        df = pd.read_csv(CITY_DATA[city])
+    except FileNotFoundError:
+        print(f"Error: Data for {city} not found.")
+        return pd.DataFrame()  # Return an empty DataFrame on error
 
     df['Start Time'] = pd.to_datetime(df['Start Time'])
 
+    # Filter by month
     if month != 'all':
         month_index = MONTHS.index(month)
         df = df[df['Start Time'].dt.month == month_index]
 
+    # Filter by day of week
     if day != 'all':
         df = df[df['Start Time'].dt.day_name().str.lower() == day]
 
@@ -53,7 +59,7 @@ def display_stats(stats, title):
 def time_stats(df):
     """Displays statistics on the most frequent times of travel."""
     print('\nCalculating The Most Frequent Times of Travel...\n')
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     most_common_month = df['Start Time'].dt.month.mode()[0]
     most_common_day = df['Start Time'].dt.day_name().mode()[0]
@@ -68,13 +74,13 @@ def time_stats(df):
 
     display_stats(stats, 'Most Frequent Times of Travel')
 
-    print(f"\nThis took {time.time() - start_time} seconds.")
+    print(f"\nThis took {time.perf_counter() - start_time:.4f} seconds.")
     print('-' * 40)
 
 def station_stats(df):
     """Displays statistics on the most popular stations and trip."""
     print('\nCalculating The Most Popular Stations and Trip...\n')
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     most_common_start_station = df['Start Station'].mode()[0]
     most_common_end_station = df['End Station'].mode()[0]
@@ -88,13 +94,13 @@ def station_stats(df):
 
     display_stats(stats, 'Most Popular Stations and Trip')
 
-    print(f"\nThis took {time.time() - start_time} seconds.")
+    print(f"\nThis took {time.perf_counter() - start_time:.4f} seconds.")
     print('-' * 40)
 
 def trip_duration_stats(df):
     """Displays statistics on the total and average trip duration."""
     print('\nCalculating Trip Duration...\n')
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     total_travel_time = df['Trip Duration'].sum()
     average_travel_time = df['Trip Duration'].mean()
@@ -106,27 +112,31 @@ def trip_duration_stats(df):
 
     display_stats(stats, 'Trip Duration')
 
-    print(f"\nThis took {time.time() - start_time} seconds.")
+    print(f"\nThis took {time.perf_counter() - start_time:.4f} seconds.")
     print('-' * 40)
 
 def user_stats(df):
     """Displays statistics on bikeshare users."""
     print('\nCalculating User Stats...\n')
-    start_time = time.time()
+    start_time = time.perf_counter()
 
     user_types = df['User Type'].value_counts()
+
     stats = {'Counts of user types': user_types}
 
+    # Gender data if available
     if 'Gender' in df.columns:
         gender_counts = df['Gender'].value_counts()
         stats['Counts of gender'] = gender_counts
     else:
         stats['Gender data'] = 'Not available'
 
+    # Birth year stats if available
     if 'Birth Year' in df.columns:
         earliest_birth = int(df['Birth Year'].min())
         most_recent_birth = int(df['Birth Year'].max())
         most_common_birth = int(df['Birth Year'].mode()[0])
+
         stats.update({
             'Earliest year of birth': earliest_birth,
             'Most recent year of birth': most_recent_birth,
@@ -137,18 +147,23 @@ def user_stats(df):
 
     display_stats(stats, 'User Stats')
 
-    print(f"\nThis took {time.time() - start_time} seconds.")
+    print(f"\nThis took {time.perf_counter() - start_time:.4f} seconds.")
     print('-' * 40)
 
 def main():
     while True:
         city, month, day = get_filters()
+        if not city:
+            break
         df = load_data(city, month, day)
 
-        time_stats(df)
-        station_stats(df)
-        trip_duration_stats(df)
-        user_stats(df)
+        if not df.empty:
+            time_stats(df)
+            station_stats(df)
+            trip_duration_stats(df)
+            user_stats(df)
+        else:
+            print("No data available for the specified filters.")
 
         restart = input('\nWould you like to restart? Enter yes or no.\n')
         if restart.lower() != 'yes':
