@@ -1,7 +1,7 @@
 # GitHub project (Project 3) repository for PDSND By Eng. Raghad Shalabi
 
 ### Date created
-*January 26, 2025*
+*January 28, 2025*
 
 ### Project Title
 *BikeShare Project*
@@ -22,4 +22,3 @@ This project analyzes *BikeShare data* to provide insights into bike rental patt
 - [GitHub Docs](https://docs.github.com/): Helped with Git and GitHub workflows.
 =======
 - [GitHub Docs](https://docs.github.com/): Helped with Git and GitHub workflows.
->>>>>>> documentation
